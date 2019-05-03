@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;net46;net47;netstandard2.0</TargetFrameworks>
+    <Authors>Ivan Mihaylovskyy, Jim Evans</Authors>
+    <Description>Extensible HTTP proxy with SSL support</Description>
+    <Copyright>Copyright © 2019 Ivan Mihaylovskyy, Jim Evans</Copyright>
+    <PackageProjectUrl>http://github.com/jimevans/BenderProxy</PackageProjectUrl>
+    <Version>1.0.0</Version>
+    <PackageTags>HTTP Proxy</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="BenderProxy.nuspec" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\" />
+  </ItemGroup>
+
+</Project>
