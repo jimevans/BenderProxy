@@ -7,6 +7,18 @@ namespace BenderProxy.Utils
 {
     static public class SocketUtils
     {
+        public static bool IsConnected(this Socket socket)
+        {
+            try
+            {
+                return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+        }
+
         public static bool IsSocketException(this Exception exception, params SocketError[] errorCodes) {
             ContractUtils.Requires<ArgumentNullException>(exception != null, "exception");
 

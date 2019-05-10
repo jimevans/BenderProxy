@@ -199,6 +199,8 @@ namespace BenderProxy
                 _openSockets.Clear();
             }
 
+            _httpProxy.Dispose();
+
             OnLog(LogLevel.Debug, "stopped on {0}", LocalEndPoint.Address);
         }
 

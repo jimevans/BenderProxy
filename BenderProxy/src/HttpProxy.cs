@@ -17,13 +17,15 @@ namespace BenderProxy
     /// <summary>
     ///     Process incoming HTTP request and provides interface for intercepting it at different stages.
     /// </summary>
-    public class HttpProxy
+    public class HttpProxy : IDisposable
     {
         protected const int DefaultHttpPort = 80;
 
         private static readonly TimeSpan DefaultCommunicationTimeout = TimeSpan.FromSeconds(1);
 
         private readonly int _defaultPort;
+
+        private readonly Dictionary<DnsEndPoint, Socket> activeSockets = new Dictionary<DnsEndPoint, Socket>();
 
         private readonly ActionWrapper<ProcessingContext> _onProcessingCompleteWrapper =
             new ActionWrapper<ProcessingContext>();
@@ -41,6 +43,8 @@ namespace BenderProxy
             new ActionWrapper<ProcessingContext>();
 
         private readonly ProcessingPipeline _pipeline;
+
+        private bool isDisposed = false;
 
         /// <summary>
         ///     Creates new instance of <see cref="HttpProxy" /> using default HTTP port (80).
@@ -134,6 +138,12 @@ namespace BenderProxy
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the proxy should attempt
+        /// to use a persistent socket connection with the web server.
+        /// </summary>
+        public bool EnableKeepAlive { get; set; } = true;
+
+        /// <summary>
         ///     Client socket read timeout
         /// </summary>
         public TimeSpan ClientReadTimeout { get; set; }
@@ -198,6 +208,14 @@ namespace BenderProxy
         }
 
         /// <summary>
+        /// Releases resources used by this <see cref="HttpProxy"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
         ///     Read <see cref="ProcessingContext.RequestHeader" /> from <see cref="ProcessingContext.ClientStream" />.
         ///     <see cref="ProcessingContext.ClientStream" /> should be defined at this point.
         /// </summary>
@@ -221,7 +239,10 @@ namespace BenderProxy
                     context.RequestHeader.Headers.Remove(GeneralHeaders.ProxyConnectionHeader);
                 }
 
-                context.RequestHeader.GeneralHeaders.Connection = "close";
+                if (!EnableKeepAlive)
+                {
+                    context.RequestHeader.GeneralHeaders.Connection = "close";
+                }
             }
             catch (IOException ex)
             {
@@ -259,15 +280,38 @@ namespace BenderProxy
 
             context.ServerEndPoint = DnsUtils.ResolveRequestEndpoint(context.RequestHeader, _defaultPort);
 
-            context.ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            bool requiresNewSocket = true;
+            if (EnableKeepAlive && activeSockets.ContainsKey(context.ServerEndPoint))
             {
-                ReceiveTimeout = (int) ServerReadTimeout.TotalMilliseconds,
-                SendTimeout = (int) ServerWriteTimeout.TotalMilliseconds
-            };
+                context.ServerSocket = activeSockets[context.ServerEndPoint];
+                if (context.ServerSocket.IsConnected())
+                {
+                    requiresNewSocket = false;
+                }
+                else
+                {
+                    context.ServerSocket.Close();
+                    activeSockets.Remove(context.ServerEndPoint);
+                    OnLog(LogLevel.Debug, "Server socket appears disconnected. Requiring new socket.");
+                }
+            }
 
-            context.ServerSocket.Connect(context.ServerEndPoint.Host, context.ServerEndPoint.Port);
+            if (requiresNewSocket)
+            {
+                context.ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                {
+                    ReceiveTimeout = (int)ServerReadTimeout.TotalMilliseconds,
+                    SendTimeout = (int)ServerWriteTimeout.TotalMilliseconds
+                };
 
-            context.ServerStream = new NetworkStream(context.ServerSocket, true);
+                context.ServerSocket.Connect(context.ServerEndPoint.Host, context.ServerEndPoint.Port);
+                if (EnableKeepAlive)
+                {
+                    activeSockets[context.ServerEndPoint] = context.ServerSocket;
+                }
+            }
+
+            context.ServerStream = new NetworkStream(context.ServerSocket, !EnableKeepAlive);
 
             OnLog(LogLevel.Debug,
                 "Connection Established: {0}:{1}",
@@ -392,6 +436,36 @@ namespace BenderProxy
             OnLog(LogLevel.Debug, "[{0}] processed", context.RequestHeader.StartLine);
         }
 
+        /// <summary>
+        /// Releases managed and unmanaged resources used by this <see cref="HttpProxy"/> instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> to release managed and 
+        /// unmanaged resources; <see langword="false"/> to release only unmanaged
+        /// resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
+                {
+                    foreach(KeyValuePair<DnsEndPoint, Socket> pair in activeSockets)
+                    {
+                        pair.Value.Dispose();
+                    }
+
+                    activeSockets.Clear();
+                }
+
+                isDisposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Log"/> event.
+        /// </summary>
+        /// <param name="level">The <see cref="Logging.LogLevel"/> of the message to log.</param>
+        /// <param name="template">The template string of the log message.</param>
+        /// <param name="args">An object array that contains zero or more objects to format in the log message.</param>
         protected void OnLog(LogLevel level, string template, params object[] args)
         {
             if (this.Log != null)
@@ -401,6 +475,11 @@ namespace BenderProxy
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="Log"/> event with information from components used by this <see cref="HttpProxy"/>.
+        /// </summary>
+        /// <param name="sender">The object raising the <see cref="Log"/> event.</param>
+        /// <param name="e">A <see cref="LogEventArgs"/> that contains the event data.</param>
         protected void OnComponentLog(object sender, LogEventArgs e)
         {
             if (this.Log != null)
