@@ -66,3 +66,16 @@ While there is nothing wrong with these two dependencies, it makes it difficult 
 where all dependencies are committed to the source tree, as all transitive dependencies similarly need to be\
 committed. Repeated attempts to contact the author and maintainer of FryProxy to address these shortcomings were
 unsuccessful.
+
+## A Note about Pull Requests and Issues
+Contributions are always welcome in the form of Pull Requests (PRs). Feel free to submit them as needed, and they will
+be reviewed as soon as possible. Regarding issue reports, if the issue is a feature or enhancement request, do submit
+it as a new issue report here in the issue tracker for discussion. In the issue report description, please indicate
+clearly that it is a request for new functionality, and the issue report will be tagged appropriately.
+
+Bug reports are required to have an accompanying PR with a failing test that demonstrates the bug. Please note that
+the PR is not required to fix the bug; it must merely include a failing test that reproduces the issue when using
+the current code base at the time of submission. Bug reports without a link to an accompanying PR with a failing
+test will have one comment asking for the failing test PR. If the PR is not supplied within one week of the request
+for the PR, the bug report will be summarily closed. This policy is not intended to be harsh, but is intended to
+prevent the common case of being unable to reproduce issues reported as bugs.
