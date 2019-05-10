@@ -58,14 +58,15 @@ namespace BenderProxy.Tests.Integration {
             FirefoxOptions options = new FirefoxOptions();
             options.Proxy = proxy;
             options.AcceptInsecureCertificates = true;
-            options.AddArgument("--headless");
+            //options.AddArgument("--headless");
             return new FirefoxDriver(options);
         }
 
         protected static IWebDriver CreateChromeDriver(Proxy proxy) {
             ChromeOptions options = new ChromeOptions();
             options.Proxy = proxy;
-            options.AddArgument("--headless");
+            options.AcceptInsecureCertificates = true;
+            //options.AddArgument("--headless");
             return new ChromeDriver(options);
         }
 

@@ -8,7 +8,8 @@ using NUnit.Framework.Internal;
 
 namespace BenderProxy.Tests.Utils
 {
-    public class SocketUtilsTests : AssertionHelper
+    [TestFixture]
+    public class SocketUtilsTests
     {
         private static IEnumerable<TestCaseParameters> IsSocketExceptionTestCases
         {

@@ -7,7 +7,8 @@ using NUnit.Framework;
 
 namespace BenderProxy.Tests.Readers
 {
-    public class HttpHeaderReaderTests : AssertionHelper
+    [TestFixture]
+    public class HttpHeaderReaderTests
     {
         [Test]
         public void ShouldReadHttpHeaders()
@@ -21,7 +22,7 @@ namespace BenderProxy.Tests.Readers
                     .ToString()
                 ));
 
-            Expect(reader.ReadHeaders(), Is.EqualTo(new List<String>
+            Assert.That(reader.ReadHeaders(), Is.EqualTo(new List<String>
             {
                 "Cache-Control:private",
                 "Content-Encoding:gzip",
@@ -41,7 +42,7 @@ namespace BenderProxy.Tests.Readers
                     .ToString()
                 ));
 
-            Expect(reader.ReadFirstLine(), Is.EqualTo("HTTP/1.1 200 OK"));
+            Assert.That(reader.ReadFirstLine(), Is.EqualTo("HTTP/1.1 200 OK"));
         }
 
         [Test]
@@ -59,10 +60,10 @@ namespace BenderProxy.Tests.Readers
 
             var header = reader.ReadHttpMessageHeader();
 
-            Expect(header.StartLine, Is.EqualTo("HTTP/1.1 200 OK"));
-            Expect(header.GeneralHeaders.CacheControl, Is.EqualTo("private"));
-            Expect(header.EntityHeaders.ContentEncoding, Is.EqualTo("gzip"));
-            Expect(header.EntityHeaders.ContentLength, Is.EqualTo(27046));
+            Assert.That(header.StartLine, Is.EqualTo("HTTP/1.1 200 OK"));
+            Assert.That(header.GeneralHeaders.CacheControl, Is.EqualTo("private"));
+            Assert.That(header.EntityHeaders.ContentEncoding, Is.EqualTo("gzip"));
+            Assert.That(header.EntityHeaders.ContentLength, Is.EqualTo(27046));
         }
 
     }

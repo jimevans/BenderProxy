@@ -5,7 +5,8 @@ using NUnit.Framework;
 
 namespace BenderProxy.Tests.Headers
 {
-    public class HttpHeadersTests : AssertionHelper
+    [TestFixture]
+    public class HttpHeadersTests
     {
         private static readonly IEnumerable<IList<String>> HeadersDataSet = new List<IList<String>>
         {
@@ -27,7 +28,7 @@ namespace BenderProxy.Tests.Headers
         {
             var headerCollection = new HttpHeaders(headers);
 
-            Expect(headerCollection.Lines, Is.EqualTo(headers));
+            Assert.That(headerCollection.Lines, Is.EqualTo(headers));
         }
     }
 }
