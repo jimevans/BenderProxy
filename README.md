@@ -1,9 +1,7 @@
-# BenderProxy
-A man-in-the-middle web proxy written in C#
 BenderProxy
 ========
 
-Extensible man in the middle HTTP proxy with SSL support. BenderProxy is a fork of the otherwise
+BenderProxy is an extensible man in the middle HTTP proxy with SSL support. It is a fork of the otherwise
 excellent [FryProxy](https://github.com/eger-geger/FryProxy) project. It was originally written
 because the original author need a way to monitor and possibly stub some browser request in
 Selenium tests. (It also available as [NuGet Package](https://www.nuget.org/packages/BenderProxy/)
