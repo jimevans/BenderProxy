@@ -1,0 +1,33 @@
+v1.1.0 - Release Date: 20 May 2019
+==================================
+This release adds support for persistent or so-called "keep-alive" connections
+to be used. This allows BenderProxy to enable scenarios like authentication
+using connection-based protocols like NTLM. The proxy now defaults to using
+persistent connections. To revert to the previous behavior of closing the
+connection to the server on every HTTP request, set the EnableKeepAlive
+property of the HttpProxy to false.
+
+Additionally, it attempts to make multiple subsequent calls that should reuse
+the same socket more thread-safe, and keep them from stepping on one another.
+Unfortunately, the way this is currently implemented is likely to introduce
+a performance bottleneck in the proxy, because only one request can be
+processed at a time. A rearchitecture to allow parallel HTTP calls should be
+created at some point.
+
+Finally, this release fixes a bug in parsing of HTTP headers. Header names,
+according to spec are supposed to be case-insensitive, and the proxy was
+not treating them that way.
+
+v1.0.0 - Release Date: 10 May 2019
+==================================
+This is the initial release of BenderProxy, which is an extensible man in the
+middle HTTP proxy with SSL support. It is a fork of the otherwise excellent
+FryProxy project. It was originally written because the original author needed
+a way to monitor and possibly stub some browser request in Selenium tests.
+
+This fork was created because the original project has dependencies on Log4Net
+and uses code contracts. While there is nothing wrong with these two
+dependencies, it makes it difficult to use the project in a monorepo, where all
+dependencies are committed to the source tree, as all transitive dependencies
+similarly need to be committed. Repeated attempts to contact the author and
+maintainer of FryProxy to address these shortcomings were unsuccessful.
