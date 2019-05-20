@@ -6,13 +6,9 @@
     <title>$title$</title>
     <authors>Ivan Mihaylovskyy, Jim Evans</authors>
     <owners>Jim Evans</owners>
-    <licenseUrl>http://github.com/jimevans/BenderProxy/blob/master/LICENSE</licenseUrl>
     <projectUrl>http://github.com/jimevans/BenderProxy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>
-      Initial release of project fork
-    </releaseNotes>
     <copyright>
       Copyright © 2019</copyright>
     <tags>HTTP Proxy</tags>

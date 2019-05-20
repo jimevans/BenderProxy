@@ -8,6 +8,7 @@
     <PackageProjectUrl>http://github.com/jimevans/BenderProxy</PackageProjectUrl>
     <Version>1.1.0</Version>
     <PackageTags>HTTP Proxy</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
