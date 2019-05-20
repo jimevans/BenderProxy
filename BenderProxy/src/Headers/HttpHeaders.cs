@@ -57,7 +57,7 @@ namespace BenderProxy.Headers
             get
             {
                 return Contains(name)
-                    ? string.Join(HeaderValueSeparator, _headers.Where(h => h.Key == name).Select(h => h.Value))
+                    ? string.Join(HeaderValueSeparator, _headers.Where(h => h.Key.ToLowerInvariant() == name.ToLowerInvariant()).Select(h => h.Value))
                     : null;
             }
 
@@ -137,7 +137,7 @@ namespace BenderProxy.Headers
 
         public bool Contains(string key)
         {
-            return _headers.Any(h => h.Key == key);
+            return _headers.Any(h => h.Key.ToLowerInvariant() == key.ToLowerInvariant());
         }
 
         public override string ToString()
