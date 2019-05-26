@@ -9,7 +9,7 @@ namespace BenderProxy.Headers
     /// </summary>
     public class HttpHeaders
     {
-        private const string HeaderValueSeparator = ",";
+        private const string HeaderValueSeparator = "\r\n";
 
         private const char HeaderNameSeparator = ':';
 
