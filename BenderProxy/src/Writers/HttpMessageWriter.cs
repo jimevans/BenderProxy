@@ -43,7 +43,7 @@ namespace BenderProxy.Writers
         {
             ContractUtils.Requires<ArgumentNullException>(header != null, "header");
 
-            var writer = new StreamWriter(OutputStream, Encoding.ASCII);
+            var writer = new StreamWriter(OutputStream, Encoding.ASCII, BufferSize, true);
 
             writer.WriteLine(header.StartLine);
 
@@ -65,6 +65,8 @@ namespace BenderProxy.Writers
                 writer.WriteLine();
                 writer.Flush();
             }
+
+            writer.Dispose();
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace BenderProxy.Writers
 
         private void CopyPlainMessageBody(Stream body, long contentLength)
         {
-            var buffer = new Byte[BufferSize];
+            var buffer = new byte[BufferSize];
 
             long totalBytesRead = 0;
 
@@ -112,6 +114,16 @@ namespace BenderProxy.Writers
             }
         }
 
+        private void CopyChunk(Stream body, long chunkLength)
+        {
+            CopyPlainMessageBody(body, chunkLength);
+
+            // Advance the body stream position beyond the CR-LF pair that
+            // defines the end of a chunk.
+            var buffer = new byte[2];
+            body.Read(buffer, 0, buffer.Length);
+        }
+
         /// <summary>
         ///     Copy chunked message body to <see cref="OutputStream" /> from given stream
         /// </summary>
@@ -120,14 +132,14 @@ namespace BenderProxy.Writers
         {
             var reader = new HttpHeaderReader(new PlainStreamReader(body));
 
-            var writer = new StreamWriter(OutputStream, Encoding.ASCII);
+            var writer = new StreamWriter(OutputStream, Encoding.ASCII, BufferSize, true);
 
-            for (var size = reader.ReadNextChunkSize();size != 0;size = reader.ReadNextChunkSize())
+            for (var size = reader.ReadNextChunkSize(); size != 0; size = reader.ReadNextChunkSize())
             {
                 writer.WriteLine(size.ToString("X"));
                 writer.Flush();
 
-                CopyPlainMessageBody(body, size);
+                CopyChunk(body, size);
 
                 writer.WriteLine();
                 writer.Flush();
@@ -135,6 +147,7 @@ namespace BenderProxy.Writers
 
             writer.WriteLine("0");
             writer.Flush();
+            writer.Dispose();
         }
 
         protected void OnLog(LogLevel level, string template, params object[] args)

@@ -49,6 +49,13 @@ namespace BenderProxy.Readers
         /// <returns>next chunk size</returns>
         public int ReadNextChunkSize()
         {
+            int nextCharValue = _reader.Peek();
+            if (nextCharValue < 0)
+            {
+                // At end of stream.
+                return 0;
+            }
+
             var firstLine = ReadFirstLine();
 
             try
