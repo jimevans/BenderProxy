@@ -95,6 +95,13 @@ namespace BenderProxy
                 {
                     break;
                 }
+                catch (InvalidOperationException)
+                {
+                    if (_shuttingDown)
+                    {
+                        break;
+                    }
+                }
             } while (!_shuttingDown && resetHandle.WaitOne());
 
             OnLog(LogLevel.Debug, "Socket Accept loop finished");
