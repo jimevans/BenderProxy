@@ -1,3 +1,35 @@
+v1.1.2 - Release Date: 29 May 2019
+==================================
+This release fixes two bugs in BenderProxy. The first bug is that if a socket
+exception is encountered after shutdown of the proxy has been requested, the
+proxy now swallows and ignores the exception. Since socket processing is
+asynchronous, it's possible for the proxy to attempt connection after no
+socket exists, and the exception is benign, since a shutdown was explicitly
+requested anyway.
+
+The second bug is in the processing of responses that utilize chunked
+encoding. Previously, after reading the results of a chunk, the proxy tried
+to read the length of the next chunk, by reading the next line of the body
+stream. However, if there are no more chunks, this could cause the reader
+to attempt reading past the end of the stream, causing an exception. To
+mitigate this, after reading a chunk, the proxy now advances the stream
+pointer two bytes, past the carriage-return/line-feed pair (CRLF) that
+marks the end of a chunk. The proxy can then properly determine if it's
+reached the end of the stream before attempting to read another chunk.
+
+v1.1.1 - Release Date: 26 May 2019
+==================================
+This release changes the behavior of the proxy when multiple headers with the
+same name are encountered. Previously, BenderProxy would concatenate the
+values for multiple header instances with commas. However, parsing these
+multiple values back out was nearly impossible, since the header value could
+legitimately contain a comma. Now, the proxy concatenates the values using
+carriage-return/line-feed pairs (CRLF), which the header value cannot
+contain, because a CRLF pair signifies the end of a header in HTTP. This
+enables the user to properly separate multiple header values when handling
+HTTP traffic. Note that this is a proxy-only change; it does not affect
+the actual HTTP traffic across the wire.
+
 v1.1.0 - Release Date: 20 May 2019
 ==================================
 This release adds support for persistent or so-called "keep-alive" connections
